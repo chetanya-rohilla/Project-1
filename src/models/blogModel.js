@@ -11,7 +11,7 @@ const blogSchema = new mongoose.Schema({
     },
     "authorId" : {
         type : mongoose.Schema.Types.ObjectId,
-        ref : projectAuthor,
+        ref : "projectAuthor",
         required : true
     },
     "tags" : [String],
@@ -33,4 +33,4 @@ const blogSchema = new mongoose.Schema({
 
 }, { timestamps : true})
 
-module.exports = mongoose.model('projectAuthor', authorSchema)
+module.exports = mongoose.model('projectBlog', blogSchema)
