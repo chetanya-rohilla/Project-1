@@ -5,7 +5,7 @@ const BlogController = require('../controllers/blogController')
 
 
 
-router.post("/createNewBlog", BlogController.createNewBlog);
+router.post("/blogs", BlogController.createNewBlog);
 
 const authorModel= require("../models/authorModel")
 const blogModel = require("../models/blogModel")
