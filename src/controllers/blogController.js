@@ -44,10 +44,6 @@ const updateBlog = async function(req, res) {
     }
 }
 
-module.exports.createNewBlog = createNewBlog
-module.exports.updateBlog = updateBlog
-module.exports.deleteBlog = deleteBlog
-
 module.exports = {
     createNewBlog,
     updateBlog
