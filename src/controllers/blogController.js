@@ -49,7 +49,7 @@ const updateBlog = async function(req, res) {
             }
         }
 
-        let query = {...req.body, isPublished : true, publishedAt : moment().format('YYYY-MM-DDTss:mm:h')}
+        let query = {...req.body, isPublished : true}
         const updatedBlog = await blogModel.findOneAndUpdate({_id : blogId}, query, {new : true})
 
         return res.status(200).send ({status: true, data: updatedBlog });
@@ -96,27 +96,9 @@ const deleteBlogByParams = async function(req,res){
 
 const getBlogs = async function(req, res) {
   try {
-
-
-
-      const check = await blogModel.find({ $and: [{ isDeleted: false }, { isPublished: true }] });
-      if (Object.keys(req.query).length === 0) {
-          return res.status(200).send({ status: true, data: check });
-      }
-
-      let search = await blogModel.find({ $or: [{ authorId: req.query.authorId }, { tags: req.query.tags }, { category: req.query.category }, { subcategory: req.query.subcategory }] });
-      let result = []
-      if (search.length > 0) {
-          for (let element of search) {
-              if (element.isDeleted == false && element.isPublished == true) {
-                  result.push(element)
-              }
-          }
-          res.status(200).send({ status: true, data: result });
-      } else {
-          res.status(404).send({ status: false, message: 'No blogs found of that author' })
-      }
-
+    const check = await blogModel.find({...req.query, isDeleted: false, isPublished: true });
+    if(!check)   return res.status(404).send({status : false, msg : "No blogs found"})
+    return res.status(200).send({ status: true, data: check });
   } catch (error) {
       res.status(500).send({ status: false, error: error.message });
   }
