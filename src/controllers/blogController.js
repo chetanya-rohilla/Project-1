@@ -49,7 +49,7 @@ const updateBlog = async function(req, res) {
 
 // DELETE/blogs/:blogId
 
-const deleteblog = async function (req, res) {
+const deleteBlog = async function (req, res) {
       try {
         let blogId = req.params.blogId;
          let blog = await blogModel.findById(blogId);
@@ -76,11 +76,25 @@ const deleteblog = async function (req, res) {
        }
    }
 
+const deleteBlogByParam = async function(req,res){
+    try{ 
+        const queryParams = req.query
+        if(!queryParams) return res.status(400).send({status: false, msg: "no query params recived"})
+        
+        const deletedBlog = await blogModel.updateMany({...queryParams, isDeleted : false}, {isDeleted : true}, {new : true})
+
+        if(deletedBlog.modifiedCount == 0)   return res.status(404).send({status: false, msg: "Blog doesn't Exist"})
+
+        return res.status(200).send({status: true, data: deletedBlog})
+    }catch(err){
+        return res.status(500).send({status: false, msg:err.message})
+    }
+}
 
 
 module.exports = {
-  createNewBlog,
-  updateBlog
+    createNewBlog,
+    updateBlog,
+    deleteBlogByParam,
+    deleteBlog
 }
-
-module.exports.deleteblog = deleteblog;
