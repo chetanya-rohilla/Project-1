@@ -45,30 +45,24 @@ const updateBlog = async function(req, res) {
 }
 
 
-const deleteBlogByParams = async function(req,res){
-try{
-    
-    const queryParams = req.query
-    //let author = req.query.authorId
-    //let authorId = await authorModel.findById(author);
+const deleteBlogByParam = async function(req,res){
+    try{ 
+        const queryParams = req.query
+        if(!queryParams) return res.status(400).send({status: false, msg: "no query params recived"})
+        
+        const deletedBlog = await blogModel.updateMany({...queryParams, isDeleted : false}, {isDeleted : true}, {new : true})
 
-    if(!queryParams) return res.status(400).send({status: false, msg: "no query params recived"})
+        if(deletedBlog.modifiedCount == 0)   return res.status(404).send({status: false, msg: "Blog doesn't Exist"})
 
-    const {authorId, tags, subcategory,category, ispublished } = queryParams
-
-    // if (!authorId){return res.status(404).send({status: false, msg: "Blog document does not exist"})
-    // }
-
-    let deleteBlog = await authorModel.findByIdAndDelete({_id: authorId}, {new: true});
-    res.send({status: true, data: deleteBlog})
-}catch(err){
-    res.status(500).send({status: false, msg:err.message})
-}
+        return res.status(200).send({status: true, data: deletedBlog})
+    }catch(err){
+        return res.status(500).send({status: false, msg:err.message})
+    }
 }
 
 
 module.exports = {
     createNewBlog,
     updateBlog,
-    deleteBlog
+    deleteBlogByParam
 }
