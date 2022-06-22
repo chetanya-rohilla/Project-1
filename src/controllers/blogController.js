@@ -55,25 +55,50 @@ const updateBlog = async function(req, res) {
 }
 
 
+
+
+// DELETE/blogs/:blogId
+
+const deleteBlog = async function (req, res) {
+      try {
+        let blogId = req.params.blogId;
+         let blog = await blogModel.findById(blogId);
+  
+           if (!blog) {
+              return res.status(404).send({status: false,msg:"No such blog exists"});
+          }
+  
+           if (blog.isDeleted == true) {
+               return res.status(400).send({ status: false, msg: "Blog not found, may be deleted" })
+          }
+  
+           let authId = blog.authorId;
+           let id = req.authorId;
+           if (id != authId) {
+               return res.status(403).send({ status: false, msg: "Not authorized..!" });
+          }
+  
+          let deletedtedUser = await blogModel.findOneAndUpdate({ _id: blogId }, { $set: { isDeleted: true ,deletedAt: Date.now()} }, { new: true });
+           res.status(200).send({status: true, msg: "done", data: deletedtedUser });
+       }
+      catch (err) {
+           res.status(500).send({status: false, msg: "Error", error: err.message })
+       }
+   }
+
 const deleteBlogByParams = async function(req,res){
-try{
-    
-    const queryParams = req.query
-    //let author = req.query.authorId
-    //let authorId = await authorModel.findById(author);
+    try{ 
+        const queryParams = req.query
+        if(!queryParams) return res.status(400).send({status: false, msg: "no query params recived"})
+        
+        const deletedBlog = await blogModel.updateMany({...queryParams, isDeleted : false}, {isDeleted : true}, {new : true})
 
-    if(!queryParams) return res.status(400).send({status: false, msg: "no query params recived"})
+        if(deletedBlog.modifiedCount == 0)   return res.status(404).send({status: false, msg: "Blog doesn't Exist"})
 
-    const {authorId, tags, subcategory,category, ispublished } = queryParams
-
-    // if (!authorId){return res.status(404).send({status: false, msg: "Blog document does not exist"})
-    // }
-
-    let deleteBlog = await authorModel.findByIdAndDelete({_id: authorId}, {new: true});
-    res.send({status: true, data: deleteBlog})
-}catch(err){
-    res.status(500).send({status: false, msg:err.message})
-}
+        return res.status(200).send({status: true, data: deletedBlog})
+    }catch(err){
+        return res.status(500).send({status: false, msg:err.message})
+    }
 }
 
 
