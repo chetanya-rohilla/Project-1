@@ -1,14 +1,24 @@
 const blogModel = require("../models/blogModel");
 const authorModel = require("../models/authorModel");
-const moment = require('moment')
+const moment = require('moment');
 
 
 const createNewBlog = async function(req,res){
     try{
+
     let blog =  req.body
     let author_Id = blog.authorId
     let author = await authorModel.findById(author_Id)
-    if(!author)  return res.status(400).send({status: false,msg: "Author not found",});
+
+    if(!author)  return res.status(400).send({status: false,msg: "Author not found!",});
+
+    let {category, tags, subcategory} = blog
+  
+    if(!category) return res.status(400).send({status: false, msg: "category required!"});
+
+    if(!tags) return res.status(400).send({status:false, masg: "require tags!"});
+
+    if(!subcategory) return res.status(400).send({status:false, masg: "require subcategory!"});      
         
     let blogCreated = await blogModel.create(blog)
     return res.status(201).send ({status: true, data: blogCreated });
@@ -70,5 +80,6 @@ try{
 module.exports = {
     createNewBlog,
     updateBlog,
-    deleteBlog
+    deleteBlog,
+    deleteBlogByParams
 }
