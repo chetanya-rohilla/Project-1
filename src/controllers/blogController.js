@@ -1,27 +1,31 @@
 const blogModel = require("../models/blogModel");
 const authorModel = require("../models/authorModel");
+const { typeChecking } = require("../controllers/authorController");
 const moment = require('moment');
 
 
 const createNewBlog = async function(req,res){
     try{
+        let blog =  req.body
+        let author_Id = blog.authorId
+        let author = await authorModel.findById(author_Id)
 
-    let blog =  req.body
-    let author_Id = blog.authorId
-    let author = await authorModel.findById(author_Id)
-
-    if(!author)  return res.status(400).send({status: false,msg: "Author not found!",});
-
-    let {category, tags, subcategory} = blog
-  
-    if(!category) return res.status(400).send({status: false, msg: "category required!"});
-
-    if(!tags) return res.status(400).send({status:false, masg: "require tags!"});
-
-    if(!subcategory) return res.status(400).send({status:false, masg: "require subcategory!"});      
+        if(!author)  return res.status(400).send({status: false,msg: "Author not found!",});
         
-    let blogCreated = await blogModel.create(blog)
-    return res.status(201).send ({status: true, data: blogCreated });
+        let {title, body, category, tags, subcategory} = blog
+    
+        if(!title) return res.status(400).send({status: false, msg: "title required!"});
+        if(!typeChecking(title))    return res.status(400).send({status: false,msg: "Please enter the title in right format...!"});
+        if(!body) return res.status(400).send({status: false, msg: "body required!"});
+        if(!typeChecking(body))    return res.status(400).send({status: false,msg: "Please enter the body in right format...!"});
+        if(!category) return res.status(400).send({status: false, msg: "category required!"});
+        if(!typeChecking(category))    return res.status(400).send({status: false,msg: "Please enter the category in right format...!"});
+        if(!tags) return res.status(400).send({status:false, masg: "require tags!"});
+        if(!typeChecking(tags))    return res.status(400).send({status: false,msg: "Please enter the tags in right format...!"});
+        if(!subcategory) return res.status(400).send({status:false, masg: "require subcategory!"});      
+            
+        let blogCreated = await blogModel.create(blog)
+        return res.status(201).send ({status: true, data: blogCreated });
     }catch(err){
         //for getting server error 
         return res.status(500).send({status: false, msg:err.message})
