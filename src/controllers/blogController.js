@@ -94,9 +94,38 @@ const deleteBlogByParams = async function(req,res){
     }
 }
 
+const getBlogs = async function(req, res) {
+  try {
+
+
+
+      const check = await blogModel.find({ $and: [{ isDeleted: false }, { isPublished: true }] });
+      if (Object.keys(req.query).length === 0) {
+          return res.status(200).send({ status: true, data: check });
+      }
+
+      let search = await blogModel.find({ $or: [{ authorId: req.query.authorId }, { tags: req.query.tags }, { category: req.query.category }, { subcategory: req.query.subcategory }] });
+      let result = []
+      if (search.length > 0) {
+          for (let element of search) {
+              if (element.isDeleted == false && element.isPublished == true) {
+                  result.push(element)
+              }
+          }
+          res.status(200).send({ status: true, data: result });
+      } else {
+          res.status(404).send({ status: false, message: 'No blogs found of that author' })
+      }
+
+  } catch (error) {
+      res.status(500).send({ status: false, error: error.message });
+  }
+}
+
 
 module.exports = {
     createNewBlog,
+    getBlogs,
     updateBlog,
     deleteBlog,
     deleteBlogByParams
