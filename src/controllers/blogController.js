@@ -43,13 +43,12 @@ const updateBlog = async function(req, res) {
         if(Object.keys(req.body).length == 0)   return res.status(400).send({status : false, msg : "Empty body for update"})
     
         for(const key in req.body){
-            console.log(key);
             if(typeof (req.body[key]) == "object"){
                 req.body[key].push(...blog[key]);
             }
         }
 
-        let query = {...req.body, isPublished : true}
+        let query = {...req.body, isPublished : true, publishedAt: moment().format('YYYY-MM-DDTss:mm:h')}
         const updatedBlog = await blogModel.findOneAndUpdate({_id : blogId}, query, {new : true})
 
         return res.status(200).send ({status: true, data: updatedBlog });
