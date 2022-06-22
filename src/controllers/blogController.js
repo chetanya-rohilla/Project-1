@@ -66,24 +66,13 @@ const updateBlog = async function(req, res) {
 const deleteBlog = async function (req, res) {
       try {
         let blogId = req.params.blogId;
-         let blog = await blogModel.findById(blogId);
+        let blog = await blogModel.findById(blogId);
   
-           if (!blog) {
-              return res.status(404).send({status: false,msg:"No such blog exists"});
-          }
+        if (!blog)   return res.status(404).send({status: false,msg:"BlogId is incorrect"});
+        if (blog.isDeleted == true)  return res.status(400).send({ status: false, msg: "Blog doesn't exist" })
   
-           if (blog.isDeleted == true) {
-               return res.status(400).send({ status: false, msg: "Blog not found, may be deleted" })
-          }
-  
-           let authId = blog.authorId;
-           let id = req.authorId;
-           if (id != authId) {
-               return res.status(403).send({ status: false, msg: "Not authorized..!" });
-          }
-  
-          let deletedtedUser = await blogModel.findOneAndUpdate({ _id: blogId }, { $set: { isDeleted: true ,deletedAt: Date.now()} }, { new: true });
-           res.status(200).send({status: true, msg: "done", data: deletedtedUser });
+        let deletedBlog = await blogModel.findOneAndUpdate({ _id: blogId }, { $set: { isDeleted: true ,deletedAt: moment().format('YYYY-MM-DDTss:mm:h')} }, { new: true });
+        res.status(200).send({status: true, data: deletedBlog });
        }
       catch (err) {
            res.status(500).send({status: false, msg: "Error", error: err.message })
@@ -95,7 +84,7 @@ const deleteBlogByParams = async function(req,res){
         const queryParams = req.query
         if(!queryParams) return res.status(400).send({status: false, msg: "no query params recived"})
         
-        const deletedBlog = await blogModel.updateMany({...queryParams, isDeleted : false}, {isDeleted : true}, {new : true})
+        const deletedBlog = await blogModel.updateMany({...queryParams, isDeleted : false}, { $set: { isDeleted: true ,deletedAt: moment().format('YYYY-MM-DDTss:mm:h')} }, {new : true})
 
         if(deletedBlog.modifiedCount == 0)   return res.status(404).send({status: false, msg: "Blog doesn't Exist"})
 
