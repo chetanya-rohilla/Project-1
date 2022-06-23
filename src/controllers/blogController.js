@@ -9,8 +9,8 @@ const createNewBlog = async function(req,res){
         let blog =  req.body
         let author_Id = blog.authorId
         let author = await authorModel.findById(author_Id)
-
         if(!author)  return res.status(400).send({status: false,msg: "Author not found!",});
+        if(req.validToken.authorId !== blog.authorId.toString())   return res.status(403).send({status : false, msg : "Not Authorised"})
         
         let {title, body, category, tags, subcategory} = blog
     
@@ -92,7 +92,7 @@ const deleteBlogByParams = async function(req,res){
         const deletedBlog = await blogModel.updateMany({_id : arr}, { $set: { isDeleted: true ,deletedAt: moment().format('YYYY-MM-DDTss:mm:h')} }, {new : true})
         if(deletedBlog.modifiedCount == 0)   return res.status(404).send({status: false, msg: "Blog doesn't Exist"})
 
-        return res.status(200).send({status: true, data: deletedBlog})
+        return res.status(200).send({status: true, data: `Number of documents deleted : ${deletedBlog.modifiedCount}`})
     }catch(err){
         return res.status(500).send({status: false, msg:err.message})
     }
