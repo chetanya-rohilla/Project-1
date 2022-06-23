@@ -2,7 +2,7 @@ const jwt = require('jsonwebtoken')
 
 const auth = async function(req, res, next) {
     const token = req.headers['x-api-key']
-        if (!token) return res.status(401).send({ msg: "please provide token" })
+        if (!token) return res.status(401).send({status: false, msg: "please provide token" })
     const validToken = jwt.verify(token, "VRCA")
 
     if (!validToken) {
