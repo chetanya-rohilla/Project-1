@@ -58,10 +58,6 @@ const updateBlog = async function(req, res) {
 }
 
 
-
-
-// DELETE/blogs/:blogId
-
 const deleteBlog = async function (req, res) {
       try {
         let blogId = req.params.blogId;
@@ -78,6 +74,7 @@ const deleteBlog = async function (req, res) {
        }
    }
 
+
 const deleteBlogByParams = async function(req,res){
     try{ 
         const queryParams = req.query
@@ -93,10 +90,12 @@ const deleteBlogByParams = async function(req,res){
     }
 }
 
+
 const getBlogs = async function(req, res) {
   try {
     const check = await blogModel.find({...req.query, isDeleted: false, isPublished: true });
     if(!check)   return res.status(404).send({status : false, msg : "No blogs found"})
+    if(check.length == 0)   return res.status(404).send({status : false, msg : "No blogs found"})
     return res.status(200).send({ status: true, data: check });
   } catch (error) {
       res.status(500).send({ status: false, error: error.message });

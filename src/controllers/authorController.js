@@ -1,8 +1,9 @@
 const authorModel = require("../models/authorModel");
 const jwt = require("jsonwebtoken");
 
-const typeChecking = function (data) {
-    if (typeof data !== 'string' && typeof data !== "object") {
+
+const typeChecking = function(data){
+    if(typeof data !== 'string' && typeof data !== "object"){
         return false;
     } else if (typeof data == 'string' && data.trim().length == 0) {
         return false;
@@ -10,6 +11,7 @@ const typeChecking = function (data) {
         return true;
     }
 }
+
 
 const createAuthor = async function (req, res) {
     try {
@@ -43,16 +45,15 @@ const createAuthor = async function (req, res) {
 
 const login = async function (req, res) {
     try {
-        let emailId = req.body.email;
+        let email = req.body.email;
         let pass = req.body.password;
 
-        if (!(emailId && pass)) return res.status(400).send({ status: false, msg: "Email-Id and Password must be provided...!" });
+        if (!(email && pass)) return res.status(400).send({ status: false, msg: "Email-Id and Password must be provided...!" });
+        let regex = /^\w+@[a-zA-Z_]+?\.[a-zA-Z]{2,3}$/
+        if (!regex.test(email)) return res.status(400).send({ status: false, msg: "Wrong Email format" })
 
-
-        let author = await authorModel.findOne({ email: emailId, password: pass });
-
+        let author = await authorModel.findOne({ email: email, password: pass });
         if (!author) return res.status(401).send({ status: false, msg: "User not found..!" });
-
 
         let token = jwt.sign(
             {
@@ -67,7 +68,6 @@ const login = async function (req, res) {
         return res.status(500).send({ status: false, msg: "Error", error: err.message });
     }
 };
-
 
 module.exports = {
     createAuthor,
