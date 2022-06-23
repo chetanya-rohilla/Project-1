@@ -41,6 +41,8 @@ const updateBlog = async function(req, res) {
         if(!blog)   return res.status(404).send({status : false, msg : "Blog Id is incorrect"})
         if(blog.isDeleted == true)  return res.status(404).send({status : false, msg : "Blog doesn't exist"})
         if(Object.keys(req.body).length == 0)   return res.status(400).send({status : false, msg : "Empty body for update"})
+        if(req.validToken.authorId !== blog.authorId.toString())   return res.status(403).send({status : false, msg : "Not Authorised"})
+        
     
         for(const key in req.body){
             if(typeof (req.body[key]) == "object"){
@@ -65,6 +67,7 @@ const deleteBlog = async function (req, res) {
   
         if (!blog)   return res.status(404).send({status: false,msg:"BlogId is incorrect"});
         if (blog.isDeleted == true)  return res.status(400).send({ status: false, msg: "Blog doesn't exist" })
+        if(req.validToken.authorId !== blog.authorId.toString())   return res.status(403).send({status : false, msg : "Not Authorised"})
   
         let deletedBlog = await blogModel.findOneAndUpdate({ _id: blogId }, { $set: { isDeleted: true ,deletedAt: moment().format('YYYY-MM-DDTss:mm:h')} }, { new: true });
         res.status(200).send({status: true, data: deletedBlog });
@@ -79,9 +82,14 @@ const deleteBlogByParams = async function(req,res){
     try{ 
         const queryParams = req.query
         if(!queryParams) return res.status(400).send({status: false, msg: "no query params recived"})
-        
-        const deletedBlog = await blogModel.updateMany({...queryParams, isDeleted : false}, { $set: { isDeleted: true ,deletedAt: moment().format('YYYY-MM-DDTss:mm:h')} }, {new : true})
 
+        let arr = []
+        const blog = await blogModel.find({...queryParams, isDeleted : false})
+        blog.forEach((ele, index) => {
+            if(req.validToken.authorId == ele.authorId.toString())   arr.push(ele._id)
+        })
+
+        const deletedBlog = await blogModel.updateMany({_id : arr}, { $set: { isDeleted: true ,deletedAt: moment().format('YYYY-MM-DDTss:mm:h')} }, {new : true})
         if(deletedBlog.modifiedCount == 0)   return res.status(404).send({status: false, msg: "Blog doesn't Exist"})
 
         return res.status(200).send({status: true, data: deletedBlog})

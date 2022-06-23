@@ -39,7 +39,7 @@ const createAuthor = async function (req, res) {
         return res.status(201).send({ status: true, Data: createData });
     }
     catch (err) {
-        return res.status(500).send({ status: false, msg: "Error", error: err.message });
+        return res.status(500).send({ status: false, msg: err.message });
     }
 }
 
@@ -53,7 +53,7 @@ const login = async function (req, res) {
         if (!regex.test(email)) return res.status(400).send({ status: false, msg: "Wrong Email format" })
 
         let author = await authorModel.findOne({ email: email, password: pass });
-        if (!author) return res.status(401).send({ status: false, msg: "User not found..!" });
+        if (!author) return res.status(401).send({ status: false, msg: "Email or Password is wrong" });
 
         let token = jwt.sign(
             {
@@ -65,7 +65,7 @@ const login = async function (req, res) {
         return res.status(200).send({ status: true, data: token });
     }
     catch (err) {
-        return res.status(500).send({ status: false, msg: "Error", error: err.message });
+        return res.status(500).send({ status: false, msg: err.message });
     }
 };
 
