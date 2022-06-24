@@ -4,6 +4,8 @@ const authorController= require("../controllers/authorController")
 const blogController= require("../controllers/blogController")
 const {auth} = require("../middlewares/midware")
 
+// Using destructuring to require only auth function from midware
+
 router.post("/authors", authorController.createAuthor )
 router.post("/login", authorController.login)
 router.post("/blogs", auth, blogController.createNewBlog);
