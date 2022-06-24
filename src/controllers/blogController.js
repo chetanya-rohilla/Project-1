@@ -67,11 +67,6 @@ const updateBlog = async function(req, res) {
                 if(author)  return res.status(400).send({ status: false, msg: "Email id is already in use" });
             }
 
-            if(key =="title"){
-                const allowed = ["Mr", "Miss", "Mrs"]
-                if (!allowed.includes(req.body[key])) return res.status(400).send({ status: false, msg: "Invalid Title, Select one from Mr, Mrs or Miss" });
-            }
-
             // For the keys whose value is a type array ex tags & subcategory we are pushing the elements present inside our existing blog to the array of req.body
 
             if(typeof (req.body[key]) == "object"){
