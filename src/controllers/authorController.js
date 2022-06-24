@@ -18,6 +18,7 @@ const createAuthor = async function (req, res) {
         let data = req.body;
         let { fname, lname, title, email, password } = data;
 
+        if (Object.keys(req.body).length == 0)   return res.status(400).send({status : false, msg : "No information passed"})
         if (!fname) return res.status(400).send({ status: false, msg: "First Name is required...!" });
         if (!typeChecking(fname)) return res.status(400).send({ status: false, msg: "Please enter the first name in right format...!" });
         if (!lname) return res.status(400).send({ status: false, msg: "Last name is required...!" });
@@ -29,12 +30,13 @@ const createAuthor = async function (req, res) {
         if (!password) return res.status(400).send({ status: false, msg: "Password is required...!" });
         if (!typeChecking(password)) return res.status(400).send({ status: false, msg: "Please enter the password in right format...!" });
 
-        let regex = /^\w+@[a-zA-Z_]+?\.[a-zA-Z]{2,3}$/
-        if (!regex.test(email)) return res.status(400).send({ status: false, msg: "Wrong Email format" })
+        if (!email.match(/^\w+@[a-zA-Z_]+?\.[a-zA-Z]{2,3}$/)) return res.status(400).send({ status: false, msg: "Wrong Email format" })
 
         const allowed = ["Mr", "Miss", "Mrs"]
         if (!allowed.includes(title)) return res.status(400).send({ status: false, msg: "Invalid Title, Select one from Mr, Mrs or Miss" });
 
+        let author = await authorModel.findOne({email : email})
+        if(author)  return res.status(400).send({ status: false, msg: "Email id is already in use" });
         let createData = await authorModel.create(data);
         return res.status(201).send({ status: true, Data: createData });
     }
@@ -48,9 +50,9 @@ const login = async function (req, res) {
         let email = req.body.email;
         let pass = req.body.password;
 
+        if (Object.keys(req.body).length == 0)   return res.status(400).send({status : false, msg : "No information passed"})
         if (!(email && pass)) return res.status(400).send({ status: false, msg: "Email-Id and Password must be provided...!" });
-        let regex = /^\w+@[a-zA-Z_]+?\.[a-zA-Z]{2,3}$/
-        if (!regex.test(email)) return res.status(400).send({ status: false, msg: "Wrong Email format" })
+        if (!email.match(/^\w+@[a-zA-Z_]+?\.[a-zA-Z]{2,3}$/)) return res.status(400).send({ status: false, msg: "Wrong Email format" })
 
         let author = await authorModel.findOne({ email: email, password: pass });
         if (!author) return res.status(401).send({ status: false, msg: "Email or Password is wrong" });
