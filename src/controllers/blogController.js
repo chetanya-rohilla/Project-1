@@ -38,8 +38,9 @@ const createNewBlog = async function(req,res){
 const updateBlog = async function(req, res) {
     try {
         const blogId = req.params.blogId
+        if (!blogId.match(/^[0-9a-fA-F]{24}$/))   return res.status(400).send({status: false,msg: "Incorrect Blog Id format"})
+        
         const blog = await blogModel.findById(blogId)
-
         if(!blog)   return res.status(404).send({status : false, msg : "Blog Id is incorrect"})
         if(blog.isDeleted == true)  return res.status(404).send({status : false, msg : "Blog doesn't exist"})
         if(Object.keys(req.body).length == 0)   return res.status(400).send({status : false, msg : "Empty body for update"})
@@ -47,6 +48,17 @@ const updateBlog = async function(req, res) {
         
     
         for(const key in req.body){
+            if (!typeChecking(req.body[key]))  return res.status(400).send({ status: false, msg: `Please enter the ${key} in right format...!` });
+            if(key == "email"){
+                if (!req.body[key].match(/^\w+@[a-zA-Z_]+?\.[a-zA-Z]{2,3}$/)) return res.status(400).send({ status: false, msg: "Wrong Email format" })
+                let author = await authorModel.findOne({email : req.body[key]})
+                if(author)  return res.status(400).send({ status: false, msg: "Email id is already in use" });
+            }
+
+            if(key =="title"){
+                const allowed = ["Mr", "Miss", "Mrs"]
+                if (!allowed.includes(req.body[key])) return res.status(400).send({ status: false, msg: "Invalid Title, Select one from Mr, Mrs or Miss" });
+            }
             if(typeof (req.body[key]) == "object"){
                 req.body[key].push(...blog[key]);
             }
@@ -65,8 +77,9 @@ const updateBlog = async function(req, res) {
 const deleteBlog = async function (req, res) {
       try {
         let blogId = req.params.blogId;
+        if (!blogId.match(/^[0-9a-fA-F]{24}$/))   return res.status(400).send({status: false,msg: "Incorrect BlogId format"});
+
         let blog = await blogModel.findById(blogId);
-  
         if (!blog)   return res.status(404).send({status: false,msg:"BlogId is incorrect"});
         if (blog.isDeleted == true)  return res.status(400).send({ status: false, msg: "Blog doesn't exist" })
         if(req.validToken.authorId !== blog.authorId.toString())   return res.status(403).send({status : false, msg : "Not Authorised"})
@@ -86,11 +99,9 @@ const deleteBlogByParams = async function(req,res){
 
         let arr = []
         const blog = await blogModel.find({...queryParams, isDeleted : false})
-        console.log(blog);
         blog.forEach((ele, index) => {
             if(req.validToken.authorId == ele.authorId.toString())   arr.push(ele._id)
         })
-        console.log(arr);
 
         const deletedBlog = await blogModel.updateMany({_id : arr}, { $set: { isDeleted: true ,deletedAt: moment().format('YYYY-MM-DDTss:mm:h')} }, {new : true})
         if(deletedBlog.modifiedCount == 0)   return res.status(404).send({status: false, msg: "Blog doesn't Exist"})

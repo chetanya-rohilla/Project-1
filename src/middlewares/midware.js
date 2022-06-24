@@ -10,6 +10,7 @@ const auth = async function(req, res, next) {
         next()
     } catch (error) {
         if(error.message == "jwt malformed")    return res.status(401).send({status: false, msg: "Token is Incorrect" })
+        if(error.message == "invalid token")    return res.status(401).send({status: false, msg: "Token is Incorrect" })
         return res.status(500).send ({status: false, msg: error.message });
     }
 }
