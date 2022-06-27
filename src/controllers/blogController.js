@@ -32,6 +32,7 @@ const createNewBlog = async function(req,res){
         if(!category) return res.status(400).send({status: false, msg: "category required!"});
         if(!typeChecking(category))    return res.status(400).send({status: false,msg: "Please enter the category in right format...!"});
         if(!typeChecking(tags))    return res.status(400).send({status: false,msg: "Please enter the tags in right format...!"});
+        if(!typeChecking(subcategory))    return res.status(400).send({status: false,msg: "Please enter the subcategory in right format...!"});
             
         let blogCreated = await blogModel.create(blog)
         return res.status(201).send ({status: true, data: blogCreated });
@@ -59,7 +60,7 @@ const updateBlog = async function(req, res) {
         for(const key in req.body){
             if (!typeChecking(req.body[key]))  return res.status(400).send({ status: false, msg: `Please enter the ${key} in right format...!` });
 
-            // To do validations on email/title we are checking if the key is equal to email/title respectively.
+            // To do validations on email we are checking if the key is equal to email respectively.
 
             if(key == "email"){
                 if (!req.body[key].match(/^\w+@[a-zA-Z_]+?\.[a-zA-Z]{2,3}$/)) return res.status(400).send({ status: false, msg: "Wrong Email format" })

@@ -48,7 +48,7 @@ const createAuthor = async function (req, res) {
         let author = await authorModel.findOne({email : email})
         if(author)  return res.status(400).send({ status: false, msg: "Email id is already in use" });
         let createData = await authorModel.create(data);
-        return res.status(201).send({ status: true, Data: createData });
+        return res.status(201).send({ status: true, data: createData });
     }
     catch (err) {
         return res.status(500).send({ status: false, msg: err.message });
@@ -76,7 +76,7 @@ const login = async function (req, res) {
             "VRCA"
         );
 
-        return res.status(200).send({ status: true, data: token });
+        return res.status(200).send({ status: true, data: {token : token} });
     }
     catch (err) {
         return res.status(500).send({ status: false, msg: err.message });
