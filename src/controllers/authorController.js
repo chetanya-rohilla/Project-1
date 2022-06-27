@@ -76,7 +76,7 @@ const login = async function (req, res) {
             "VRCA"
         );
 
-        return res.status(200).send({ status: true, data: token });
+        return res.status(200).send({ status: true, data: {token : token} });
     }
     catch (err) {
         return res.status(500).send({ status: false, msg: err.message });
