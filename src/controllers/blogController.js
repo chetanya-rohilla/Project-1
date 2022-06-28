@@ -21,7 +21,7 @@ const createNewBlog = async function(req,res){
         if(!author)  return res.status(400).send({status: false,msg: "Author not found!",});
         if(req.validToken.authorId != blog.authorId)   return res.status(403).send({status : false, msg : "Not Authorised"})
 
-        let {title, body, category, tags, subcategory} = blog
+        let {title, body, category, tags, subcategory, isPublished} = blog
 
         // Used destructuring to get title, body etc from req.body
 
@@ -31,8 +31,9 @@ const createNewBlog = async function(req,res){
         if(!typeChecking(body))    return res.status(400).send({status: false,msg: "Please enter the body in right format...!"});
         if(!category) return res.status(400).send({status: false, msg: "category required!"});
         if(!typeChecking(category))    return res.status(400).send({status: false,msg: "Please enter the category in right format...!"});
-        if(!typeChecking(tags))    return res.status(400).send({status: false,msg: "Please enter the tags in right format...!"});
-        if(!typeChecking(subcategory))    return res.status(400).send({status: false,msg: "Please enter the subcategory in right format...!"});
+        if(tags) if(!typeChecking(tags))    return res.status(400).send({status: false,msg: "Please enter the tags in right format...!"});
+        if(subcategory) if(!typeChecking(subcategory))    return res.status(400).send({status: false,msg: "Please enter the subcategory in right format...!"});
+        if(isPublished) blog.publishedAt = moment().format('YYYY-MM-DDTss:mm:h')
             
         let blogCreated = await blogModel.create(blog)
         return res.status(201).send ({status: true, data: blogCreated });
@@ -58,15 +59,11 @@ const updateBlog = async function(req, res) {
         // We are using for..in to iterate over the key:value pairs of req.body
         
         for(const key in req.body){
-            if (!typeChecking(req.body[key]))  return res.status(400).send({ status: false, msg: `Please enter the ${key} in right format...!` });
+            if(typeof req.body[key] !== "boolean")  if (!typeChecking(req.body[key]))  return res.status(400).send({ status: false, msg: `Please enter the ${key} in right format...!` });
 
-            // To do validations on email we are checking if the key is equal to email respectively.
+            // Updating our req.body to add isPublished & publishedAt fields
 
-            if(key == "email"){
-                if (!req.body[key].match(/^\w+@[a-zA-Z_]+?\.[a-zA-Z]{2,3}$/)) return res.status(400).send({ status: false, msg: "Wrong Email format" })
-                let author = await authorModel.findOne({email : req.body[key]})
-                if(author)  return res.status(400).send({ status: false, msg: "Email id is already in use" });
-            }
+            if(key == "isPublished")   req.body = {...req.body, isPublished : req.body.isPublished, publishedAt: moment().format('YYYY-MM-DDTss:mm:h')}
 
             // For the keys whose value is a type array ex tags & subcategory we are pushing the elements present inside our existing blog to the array of req.body
 
@@ -77,7 +74,7 @@ const updateBlog = async function(req, res) {
 
         // All the updates that have to be done are first passed inside an object query like updates inside req.body, isPublished and publishedAt.
 
-        let query = {...req.body, isPublished : true, publishedAt: moment().format('YYYY-MM-DDTss:mm:h')}
+        let query = {...req.body}
         const updatedBlog = await blogModel.findOneAndUpdate({_id : blogId}, query, {new : true})
 
         return res.status(200).send ({status: true, data: updatedBlog });
@@ -109,6 +106,7 @@ const deleteBlog = async function (req, res) {
 const deleteBlogByParams = async function(req,res){
     try{ 
         const queryParams = req.query
+        if(Object.keys(queryParams).length == 0)  return res.status(400).send({status: false,msg: "Nothing passed in filter"});
 
         // Finding all the documents that pass the filter given in req.query
 
